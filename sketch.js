@@ -36,8 +36,22 @@ function setup() {
   noStroke();
   fill(150, 50, 200);
 
-  // x = 20;
-  // y = 100;
+
+  //Create n particles
+  //   ---Near center but randomly distributed away from it.
+  //Loop over them and connect to all the other particles.
+  //Add the edge connections to the particle instance.
+  //
+  //Create an attractor in the center to balance it.
+  //
+  //Change the loop above to randomize the connections.
+  //
+  //Integrate this with the BFS algorithm.
+  //   -Check to see what I need from the BFS sketch.
+  //   -Add a button to run the algorithm.
+  //   -Run the algorithm and change colors for each change.
+
+
 
   // for (let i = 0; i < 40; i++) {
   //   const particle = new Particle(x * i, y);
@@ -45,15 +59,33 @@ function setup() {
   //   particles.push(particle);
   // }
 
+  const NUM_PARTICLES = 10;
+
+
+  // const gravity = new Vec2D(0, 1);
+
+  for (let i = 0; i < NUM_PARTICLES; i++) {
+    let p = new Particle(random(width), random(height));
+    particles.push(p);
+    physics.addParticle(p);
+  }
+
+  for (let i = 0; i < NUM_PARTICLES - 1; i++) {
+    for (let j = j + 1; j < NUM_PARTICLES - 1; j++) {
 
 
 
 
-  // myParticle = new Particle(300, 300);
+    }
+  }
 
-  p1 = new Particle(width / 2, 30);
-  p2 = new Particle(width / 2 + 160, 30);
-  p1.lock();
+
+
+
+
+  // p1 = new Particle(width / 2, 30);
+  // p2 = new Particle(width / 2 + 160, 30);
+  // p1.lock();
 
   //new VerletSpring2d
   //  1) Particle #1
@@ -65,9 +97,9 @@ function setup() {
   let spring = new VerletSpring2D(p1, p2, 160, 0.7);
   //To show the spring I need to make a class which extends VerletSpring2D and has a display method.
 
-  physics.addParticle(p1);
-  physics.addParticle(p2);
-  physics.addSpring(spring);
+  // physics.addParticle(p1);
+  // physics.addParticle(p2);
+  // physics.addSpring(spring);
 
 
 
@@ -87,10 +119,10 @@ function draw() {
   background(55)
   physics.update();
   // myParticle.display();
-  p1.display();
-  p2.display();
+  // p1.display();
+  // p2.display();
 
-  // particles.forEach(particle => {
-  //   particle.display();
-  // })
+  particles.forEach(particle => {
+    particle.display();
+  })
 }
