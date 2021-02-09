@@ -20,16 +20,25 @@ function setup() {
 
   //Initialize the physics world.
   physics = new VerletPhysics2D;
-
-  const gravity = new Vec2D(0, 1);
-  const gb = new GravityBehavior(gravity);
-  physics.addBehavior(gb);
   //These three lines could also be:
   //physics.addBehanior(newGravityBehavior(new Vec2D(0, 1)));
+  const gravity = new Vec2D(0, 1);
+  // const gb = new GravityBehavior(gravity);
+  // physics.addBehavior(gb);
+
+  var myCanvas = createCanvas(640, 600);
+  physics.setWorldBounds(new Rect(0, 0, width, height));
 
 
-  x = 20;
-  y = 100;
+  //This needs to happen after the createCanvas because otherwise it will initialize at the default value 100, 100;
+
+  background(127, 127, 139);
+  noStroke();
+  fill(150, 50, 200);
+
+  // x = 20;
+  // y = 100;
+
   // for (let i = 0; i < 40; i++) {
   //   const particle = new Particle(x * i, y);
   //   physics.addParticle(particle);
@@ -37,14 +46,8 @@ function setup() {
   // }
 
 
-  var myCanvas = createCanvas(640, 600);
 
-  //This needs to happen after the createCanvas because otherwise it will initialize at the default value 100, 100;
-  physics.setWorldBounds(new Rect(0, 0, width, height));
 
-  background(127, 127, 139);
-  noStroke();
-  fill(150, 50, 200);
 
   // myParticle = new Particle(300, 300);
 
@@ -60,6 +63,7 @@ function setup() {
   //         --- 1 is completely rigid.
 
   let spring = new VerletSpring2D(p1, p2, 160, 0.7);
+  //To show the spring I need to make a class which extends VerletSpring2D and has a display method.
 
   physics.addParticle(p1);
   physics.addParticle(p2);
