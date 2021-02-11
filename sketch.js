@@ -6,123 +6,193 @@ var VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
   Vec2D = toxi.geom.Vec2D,
   Rect = toxi.geom.Rect;
 
-let GravityBehavior = toxi.physics2d.behaviors.ConstantForceBehavior;
-
-
-
-const particles = [];
-const springs = [];
-let p1, p2;
-
-let physics;
-
-function setup() {
-
-  //Initialize the physics world.
-  physics = new VerletPhysics2D;
-  //These three lines could also be:
-  //physics.addBehanior(newGravityBehavior(new Vec2D(0, 1)));
-  const gravity = new Vec2D(0, 1);
-  // const gb = new GravityBehavior(gravity);
-  // physics.addBehavior(gb);
-
-  var myCanvas = createCanvas(640, 600);
-  physics.setWorldBounds(new Rect(0, 0, width, height));
-
-
-  //This needs to happen after the createCanvas because otherwise it will initialize at the default value 100, 100;
-
-  background(127, 127, 139);
-  noStroke();
-  fill(150, 50, 200);
-
-
-  //Create n particles
-  //   ---Near center but randomly distributed away from it.
-  //Loop over them and connect to all the other particles.
-  //Add the edge connections to the particle instance.
-  //
-  //Create an attractor in the center to balance it.
-  //
-  //Change the loop above to randomize the connections.
-  //
-  //Integrate this with the BFS algorithm.
-  //   -Check to see what I need from the BFS sketch.
-  //   -Add a button to run the algorithm.
-  //   -Run the algorithm and change colors for each change.
-
-
-
-  // for (let i = 0; i < 40; i++) {
-  //   const particle = new Particle(x * i, y);
-  //   physics.addParticle(particle);
-  //   particles.push(particle);
-  // }
-
-  const NUM_PARTICLES = 10;
-
-
-  // const gravity = new Vec2D(0, 1);
-
-  for (let i = 0; i < NUM_PARTICLES; i++) {
-    let p = new Particle(random(width), random(height));
-    particles.push(p);
-    physics.addParticle(p);
+function times(n, fn) {
+  var arr = [];
+  for (var i = 0; i < n; i++) {
+    arr.push(fn(i, n));
   }
+  return arr;
+};
+¶
+utility to provide an iterator function with everly element and every element after that element
 
-  for (let i = 0; i < NUM_PARTICLES - 1; i++) {
-    for (let j = j + 1; j < NUM_PARTICLES - 1; j++) {
 
-
-
-
+function forEachNested(arr, fn) {
+  for (var i = 0; i < arr.length; i++) {
+    for (var j = i + 1; j < arr.length; j++) {
+      var result = fn(arr[i], arr[j], i, j, arr);
+      if (result === false) {
+        return;
+      }
     }
   }
-
-
-
-
-
-  // p1 = new Particle(width / 2, 30);
-  // p2 = new Particle(width / 2 + 160, 30);
-  // p1.lock();
-
-  //new VerletSpring2d
-  //  1) Particle #1
-  //  2) Particle #2
-  //  3) Rest length - in pixels
-  //  4) Strength - a number between 0 and 1.
-  //         --- 1 is completely rigid.
-
-  let spring = new VerletSpring2D(p1, p2, 160, 0.7);
-  //To show the spring I need to make a class which extends VerletSpring2D and has a display method.
-
-  // physics.addParticle(p1);
-  // physics.addParticle(p2);
-  // physics.addSpring(spring);
-
-
-
-
-
 }
 
-let run = true;
-function keyPressed(e) {
-  if (keyCode === 32) {
-    run = !run;
-    run ? loop() : noLoop();
-  }
+var options = {
+  numClusters: 8,
+  particleRadius: 16,
+  showPhysics: true,
+  showParticles: true,
+  springStrength: 0.01,
+  minDistanceSpringStrength: 0.05
+};
+
+var gui = new dat.gui.GUI();
+gui.add(options, 'numClusters', 5, 16).step(1);
+gui.add(options, 'showPhysics');
+gui.add(options, 'showParticles');
+gui.add(options, 'springStrength', 0, 0.1).step(0.001);
+gui.add(options, 'minDistanceSpringStrength', 0, 0.1).step(0.001);
+gui.add({ makeGraph: makeGraph }, 'makeGraph').name('New Graph');
+
+
+var clusters,
+  physics;
+
+var bottomPadding = 200;
+
+function setup() {
+  var p5Renderer2D = createCanvas(window.innerWidth, window.innerHeight - bottomPadding);
+  document.getElementById('example-container').appendChild(p5Renderer2D.canvas);
+
+  physics = new VerletPhysics2D();
+  physics.setWorldBounds(new Rect(10, 10, width - 20, height - 20));
+  // ¶
+  // Spanw a new random Graph
+
+
+  makeGraph();
+}
+
+function makeGraph() {
+  physics.clear();
+
+  clusters = times(options.numClusters, function () {
+    return new Cluster(
+      Math.floor(random(3, 8)),
+      Math.floor(random(20, 100)),
+      new Vec2D(width / 2, height / 2)
+    );
+  });
+
+  forEachNested(clusters, function (ci, cj) {
+    ci.connect(cj);
+  })
 }
 
 function draw() {
-  background(55)
-  physics.update();
-  // myParticle.display();
-  // p1.display();
-  // p2.display();
+  // ¶
+  // update the physics world
 
-  particles.forEach(particle => {
-    particle.display();
-  })
+
+  physics.update();
+
+  background(255);
+  // ¶
+  // display all points
+
+
+  if (options.showParticles) {
+    clusters.forEach(function (c) {
+      c.display();
+    });
+  }
+  // ¶
+  // show the physics
+
+
+  if (options.showPhysics) {
+    forEachNested(clusters, function (ci, cj) {
+      ¶
+      cluster internal connections
+
+
+      ci.showConnections();
+      ¶
+      cluster connections to other clusters
+
+
+      ci.showConnections(cj);
+    });
+  }
 }
+// ¶
+// A Cluster class, based on The Nature of Code Initialize a Cluster with a number of nodes, a diameter and a centerpoint
+
+
+function Cluster(n, d, center) {
+  this.diameter = d;
+  this.nodes = times(n, function () {
+    return new Node(center.add(Vec2D.randomVector()));
+  });
+
+  for (var i = 1; i < this.nodes.length; i++) {
+    var pi = this.nodes[i];
+    for (var j = 0; j < i; j++) {
+      var pj = this.nodes[j];
+      physics.addSpring(new VerletSpring2D(pi, pj, d, options.springStrength));
+    }
+  }
+}
+
+Cluster.prototype.display = function () {
+  this.nodes.forEach(function (n) {
+    n.display();
+  });
+};
+// ¶
+// This function connects one cluster to another Each point of one cluster connects to each point of the other cluster A toxi.physics2d.VerletMinDistanceSpring2D is a string which only enforces its restLength if the current distance is less than its restLength. This is handy if you just want to ensure objects are at elast a certain distance from each other, but don’t care if its bigger than the enforced minimum.
+
+
+Cluster.prototype.connect = function (other) {
+  var selfDiam = this.diameter;
+  this.nodes.forEach(function (pi) {
+    other.nodes.forEach(function (pj) {
+      physics.addSpring(
+        new VerletMinDistanceSpring2D(
+          pi,
+          pj,
+          (selfDiam + other.diameter) * 0.5,
+          options.minDistanceSpringStrength
+        )
+      );
+    })
+  });
+};
+
+Cluster.prototype.showConnections = function (other) {
+  if (!other) {
+
+    // draw all the internal connections
+
+
+    stroke(0, 150);
+    forEachNested(this.nodes, function (pi, pj) {
+      line(pi.x, pi.y, pj.x, pj.y);
+    });
+  } else {
+    stroke(0, 15);
+    this.nodes.forEach(function (pi) {
+      other.nodes.forEach(function (pj) {
+        line(pi.x, pi.y, pj.x, pj.y);
+      });
+    });
+  }
+};
+
+// Node inherits from toxi.physic2d.VerletParticle2D and adds a display() function for rendering with p5.js
+
+
+function Node(pos) {
+
+
+  VerletParticle2D.call(this, pos);
+}
+
+Node.prototype = Object.create(VerletParticle2D.prototype);
+
+Node.prototype.display = function () {
+  fill(0, 150);
+  stroke(0);
+  ellipse(this.x, this.y, options.particleRadius, options.particleRadius);
+};
