@@ -8,7 +8,8 @@ class Particle extends VerletParticle2D {
   }
 
   display() {
-    fill(255);
+    fill(255, 255, 255);
+    noStroke();
     ellipse(this.x, this.y, 10, 10);
   }
 

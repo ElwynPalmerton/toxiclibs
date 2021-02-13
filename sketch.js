@@ -5,13 +5,13 @@ var VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
   AttractionBehavior = toxi.physics2d.behaviors.AttractionBehavior,
   VerletMinDistanceSpring2D = toxi.physics2d.VerletMinDistanceSpring2D,
   Vec2D = toxi.geom.Vec2D,
-  Rect = toxi.geom.Rect;
-
-let GravityBehavior = toxi.physics2d.behaviors.ConstantForceBehavior;
+  Rect = toxi.geom.Rect,
+  GravityBehavior = toxi.physics2d.behaviors.ConstantForceBehavior;
 
 let trampoline, attractor;
-
 let physics;
+
+let centerX, centerY;
 
 function setup() {
 
@@ -29,22 +29,19 @@ function setup() {
   noStroke();
   fill(150, 50, 200);
 
+  centerX = width / 2;
+  centerY = height / 2;
+
   trampoline = new Trampoline();
+  trampoline.addTassels();
 
+  attractor = new Attractor(centerX, centerY);
+  attractor.lock();
 
-  attractor = new Attractor(width - 200, height - 200);
-  physics.addParticle(attractor);
-  let attraction = new AttractionBehavior(attractor, width * 2, 0.1);
-  physics.addBehavior(attraction, width, 0.1);
-
-
-  particle = new Attractor(200, 200);
-  physics.addParticle(particle);
-  attraction = new AttractionBehavior(particle, width * 2, 0.1);
-  physics.addBehavior(attraction, width, 0.1);
-
-
+  particle = new Attractor(0, 0);
+  particle.lock();
 }
+
 
 let run = true;
 function keyPressed(e) {
@@ -54,12 +51,14 @@ function keyPressed(e) {
   }
 }
 
+
 function draw() {
   background(0, 0, 0);
   physics.update();
   trampoline.display();
 
   attractor.display();
-  particle.display();
 
+  particle.orbit();
+  particle.display();
 }
