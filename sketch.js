@@ -8,7 +8,6 @@ var VerletPhysics2D = toxi.physics2d.VerletPhysics2D,
 
 let GravityBehavior = toxi.physics2d.behaviors.ConstantForceBehavior;
 
-
 const particles = [];
 const springs = [];
 let p1, p2;
@@ -25,14 +24,14 @@ function setup() {
   // const gb = new GravityBehavior(gravity);
   // physics.addBehavior(gb);
 
-  var myCanvas = createCanvas(640, 600);
+  var myCanvas = createCanvas(windowWidth, windowHeight);
   physics.setWorldBounds(new Rect(0, 0, width, height));
 
 
   //This needs to happen after the createCanvas because otherwise it will initialize at the default value 100, 100;
 
 
-  background(127, 127, 139);
+  background(0, 0, 0);
   noStroke();
   fill(150, 50, 200);
 
@@ -81,15 +80,37 @@ function setup() {
     particles.push(particleRow);
   }
 
+  //Link all of the particles together.  
+  //Lock the corners.
 
+  const DIST = 20;
+  const STRENGTH = 0.001;
 
-  particles.forEach((row, i) => {
-    row.forEach((particle, j) => {
+  for (let i = 0; i < ROWS - 1; i++) {
+    for (let j = 0; j < COLS; j++) {
+      let p1 = particles[i][j];
+      let p2 = particles[i + 1][j];
 
+      let spring = new Spring(p1, p2, DIST, STRENGTH);
+      springs.push(spring);
+      physics.addSpring(spring);
+    }
+  }
 
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS - 1; j++) {
+      let p1 = particles[i][j];
+      let p2 = particles[i][j + 1];
+      let spring = new Spring(p1, p2, DIST, STRENGTH);
+      springs.push(spring);
+      physics.addSpring(spring);
+    }
+  }
 
-    })
-  })
+  particles[0][0].lock();
+  particles[0][COLS - 1].lock();
+  particles[ROWS - 1][COLS - 1].lock();
+  particles[ROWS - 1][0].lock();
 
 
   // p1 = new Particle(width / 2, 30);
@@ -121,15 +142,20 @@ function keyPressed(e) {
 }
 
 function draw() {
-  background(55)
+  background(0, 0, 0);
   physics.update();
   // myParticle.display();
   // p1.display();
   // p2.display();
 
-  particles.forEach(row => {
-    row.forEach(particle => {
-      particle.display();
-    })
+  // particles.forEach(row => {
+  //   row.forEach(particle => {
+  //     particle.display();
+  //   })
+  // })
+
+
+  springs.forEach(spring => {
+    spring.display();
   })
 }
